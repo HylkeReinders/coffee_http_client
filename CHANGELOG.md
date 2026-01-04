@@ -18,3 +18,7 @@ Updated README and added a ROADMAP.md
 ## 0.0.3
 
 Removed Typedefs.
+
+## 0.0.4
+
+Added a postHandled<T>()

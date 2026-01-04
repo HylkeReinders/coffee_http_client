@@ -74,10 +74,7 @@ final class CoffeeHttp {
   /// - testing
   /// - background isolates
   /// - multiple API clients
-  static CoffeeHttp create(
-    CoffeeHttpConfig config, {
-    CoffeeTransportAdapter? adapter,
-  }) {
+  static CoffeeHttp create(CoffeeHttpConfig config, {CoffeeTransportAdapter? adapter}) {
     return CoffeeHttp._(config, adapter ?? HttpPackageAdapter(config));
   }
 
@@ -104,23 +101,13 @@ final class CoffeeHttp {
     try {
       response = await _adapter.send(request, headers: headers);
     } on TimeoutException catch (timeoutException) {
-      final error = CoffeeHttpError(
-        kind: CoffeeHttpErrorKind.timeout,
-        underlying: timeoutException,
-      );
-      _config.hooks.onError?.call(
-        CoffeeErrorContext(request: request, error: error),
-      );
+      final error = CoffeeHttpError(kind: CoffeeHttpErrorKind.timeout, underlying: timeoutException);
+      _config.hooks.onError?.call(CoffeeErrorContext(request: request, error: error));
 
       throw error;
     } catch (exception) {
-      final error = CoffeeHttpError(
-        kind: CoffeeHttpErrorKind.network,
-        underlying: exception,
-      );
-      _config.hooks.onError?.call(
-        CoffeeErrorContext(request: request, error: error),
-      );
+      final error = CoffeeHttpError(kind: CoffeeHttpErrorKind.network, underlying: exception);
+      _config.hooks.onError?.call(CoffeeErrorContext(request: request, error: error));
 
       throw error;
     }
@@ -128,9 +115,7 @@ final class CoffeeHttp {
     final duration = DateTime.now().difference(start);
     final timedResponse = response.copyWith(duration: duration);
 
-    _config.hooks.onResponse?.call(
-      CoffeeResponseContext(request: request, response: timedResponse),
-    );
+    _config.hooks.onResponse?.call(CoffeeResponseContext(request: request, response: timedResponse));
 
     return timedResponse;
   }
@@ -214,13 +199,43 @@ final class CoffeeHttp {
       throw StateError('CoffeeHooks.handleResponse is not configured.');
     }
 
-    final value = handler(
-      CoffeeHandleResponseContext(
-        request: req,
-        response: raw,
-        forceStatusCode: forceStatusCode,
-      ),
+    final value = handler(CoffeeHandleResponseContext(request: req, response: raw, forceStatusCode: forceStatusCode));
+
+    return value as T;
+  }
+
+  /// Executes a POST request and applies the `handleResponse` hook.
+  ///
+  /// This method provides typed semantics while keeping transport behavior explicit.
+  ///
+  /// Throws a [StateError] if `handleResponse` is not configured.
+  Future<T> postHandled<T>(
+    String path, {
+    String? name,
+    Set<String> tags = const {},
+    Map<String, String>? query,
+    Map<String, String>? headers,
+    Object? jsonBody,
+    int? forceStatusCode,
+  }) async {
+    final req = CoffeeRequest(
+      method: CoffeeHttpMethod.post,
+      path: path,
+      name: name,
+      tags: tags,
+      query: query ?? const {},
+      headers: headers ?? const {},
+      jsonBody: jsonBody,
     );
+
+    final raw = await request(req);
+
+    final handler = _config.hooks.handleResponse;
+    if (handler == null) {
+      throw StateError('CoffeeHooks.handleResponse is not configured.');
+    }
+
+    final value = handler(CoffeeHandleResponseContext(request: req, response: raw, forceStatusCode: forceStatusCode));
 
     return value as T;
   }
