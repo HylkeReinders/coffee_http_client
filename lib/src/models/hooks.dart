@@ -2,56 +2,6 @@ import '../error.dart';
 import 'request.dart';
 import 'response.dart';
 
-/// Transforms a raw HTTP response into an application-level value.
-///
-/// `handleResponse` is the primary integration point for defining
-/// a *standard response contract* across an application.
-///
-/// This function is responsible for:
-/// - interpreting HTTP status codes
-/// - decoding the response body (e.g. JSON)
-/// - throwing application-level errors when appropriate
-///
-/// It is intentionally opinionated and **application-defined**.
-/// `coffee_http` does not impose any behavior here.
-///
-/// The return value is typed at the call site via `getHandled<T>()`.
-typedef CoffeeHandleResponse =
-    Object? Function(CoffeeHandleResponseContext ctx);
-
-/// Observes a completed HTTP request.
-///
-/// `onResponse` is called exactly once for every request
-/// that successfully produces a response, regardless of status code.
-///
-/// Typical use cases:
-/// - logging
-/// - metrics / timing
-/// - debugging
-/// - tracing
-///
-/// This hook must not:
-/// - throw for control flow
-/// - mutate the response
-/// - implement retries or parsing
-typedef CoffeeOnResponse = void Function(CoffeeResponseContext ctx);
-
-/// Observes a request failure.
-///
-/// `onError` is called when the request lifecycle fails
-/// before a valid HTTP response can be produced.
-///
-/// Typical use cases:
-/// - error logging
-/// - crash reporting
-/// - telemetry
-///
-/// This hook must not:
-/// - swallow errors
-/// - perform hidden retries
-/// - mutate request state
-typedef CoffeeOnError = void Function(CoffeeErrorContext ctx);
-
 /// Collection of optional hooks that observe or transform
 /// the `coffee_http` request lifecycle.
 ///
@@ -75,17 +25,57 @@ final class CoffeeHooks {
   /// Standard response handler used by `getHandled<T>()`.
   ///
   /// If not provided, calling `getHandled<T>()` will throw.
-  final CoffeeHandleResponse? handleResponse;
+  ///
+  /// Transforms a raw HTTP response into an application-level value.
+  ///
+  /// `handleResponse` is the primary integration point for defining
+  /// a *standard response contract* across an application.
+  ///
+  /// This function is responsible for:
+  /// - interpreting HTTP status codes
+  /// - decoding the response body (e.g. JSON)
+  /// - throwing application-level errors when appropriate
+  ///
+  /// It is intentionally opinionated and **application-defined**.
+  /// `coffee_http` does not impose any behavior here.
+  ///
+  /// The return value is typed at the call site via `getHandled<T>()`.
+  final Object? Function(CoffeeHandleResponseContext ctx)? handleResponse;
 
-  /// Called for every completed request that produces a response.
+  /// Observes a completed HTTP request.
   ///
   /// This hook is not called for transport-level failures.
-  final CoffeeOnResponse? onResponse;
-
-  /// Called when a request fails before producing a response.
   ///
-  /// This hook observes transport-level errors only.
-  final CoffeeOnError? onError;
+  /// `onResponse` is called exactly once for every request
+  /// that successfully produces a response, regardless of status code.
+  ///
+  /// Typical use cases:
+  /// - logging
+  /// - metrics / timing
+  /// - debugging
+  /// - tracing
+  ///
+  /// This hook must not:
+  /// - throw for control flow
+  /// - mutate the response
+  /// - implement retries or parsing
+  final void Function(CoffeeResponseContext ctx)? onResponse;
+
+  /// Observes a request failure.
+  ///
+  /// `onError` is called when the request lifecycle fails
+  /// before a valid HTTP response can be produced.
+  ///
+  /// Typical use cases:
+  /// - error logging
+  /// - crash reporting
+  /// - telemetry
+  ///
+  /// This hook must not:
+  /// - swallow errors
+  /// - perform hidden retries
+  /// - mutate request state
+  final void Function(CoffeeErrorContext ctx)? onError;
 
   /// Creates a hooks container.
   ///
@@ -111,11 +101,7 @@ final class CoffeeHandleResponseContext {
   final int? forceStatusCode;
 
   /// Creates a response-handling context.
-  const CoffeeHandleResponseContext({
-    required this.request,
-    required this.response,
-    this.forceStatusCode,
-  });
+  const CoffeeHandleResponseContext({required this.request, required this.response, this.forceStatusCode});
 }
 
 /// Context provided to [CoffeeOnResponse].

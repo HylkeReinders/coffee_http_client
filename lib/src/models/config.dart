@@ -3,24 +3,6 @@ import 'dart:async';
 import 'hooks.dart';
 import 'request.dart';
 
-/// Builds additional headers for a single request.
-///
-/// This is the primary integration point for app-specific concerns such as:
-/// - authentication (Bearer tokens, session tokens)
-/// - device identifiers
-/// - locale / language headers
-/// - custom API keys
-///
-/// The builder is called once per request and may be async.
-/// Returned headers are merged into the final request headers.
-///
-/// Header merge order (highest wins last):
-/// 1) [CoffeeHttpConfig.defaultHeaders]
-/// 2) [CoffeeHttpConfig.headersBuilder] output
-/// 3) [CoffeeRequest.headers]
-typedef CoffeeHeadersBuilder =
-    FutureOr<Map<String, String>> Function(CoffeeRequest request);
-
 /// Supported URL schemes for [CoffeeUri].
 ///
 /// `coffee_http` intentionally supports only HTTP and HTTPS.
@@ -54,15 +36,22 @@ final class CoffeeHttpConfig {
   /// [CoffeeTimeouts.connectTimeout] is reserved for future adapters / clients.
   final CoffeeTimeouts timeouts;
 
-  /// Builds additional headers per request (auth, device info, locale, etc.).
+  /// Builds additional headers for a single request.
   ///
-  /// This is where applications should provide tokens and other dynamic header values.
+  /// This is the primary integration point for app-specific concerns such as:
+  /// - authentication (Bearer tokens, session tokens)
+  /// - device identifiers
+  /// - locale / language headers
+  /// - custom API keys
   ///
-  /// Merge order (highest wins last):
-  /// 1) [defaultHeaders]
-  /// 2) [headersBuilder] output
+  /// The builder is called once per request and may be async.
+  /// Returned headers are merged into the final request headers.
+  ///
+  /// Header merge order (highest wins last):
+  /// 1) [CoffeeHttpConfig.defaultHeaders]
+  /// 2) [CoffeeHttpConfig.headersBuilder] output
   /// 3) [CoffeeRequest.headers]
-  final CoffeeHeadersBuilder? headersBuilder;
+  final FutureOr<Map<String, String>> Function(CoffeeRequest request)? headersBuilder;
 
   /// Hooks that allow observing or transforming the request lifecycle.
   ///
@@ -79,10 +68,7 @@ final class CoffeeHttpConfig {
   /// This should typically be called once at app startup and passed into `CoffeeHttp.configure(...)`.
   CoffeeHttpConfig({
     required this.baseUrl,
-    this.defaultHeaders = const {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
+    this.defaultHeaders = const {'Accept': 'application/json', 'Content-Type': 'application/json'},
     this.headersBuilder,
     this.timeouts = const CoffeeTimeouts(),
     this.hooks = const CoffeeHooks(),
@@ -208,8 +194,5 @@ final class CoffeeTimeouts {
   final Duration receiveTimeout;
 
   /// Creates a timeout configuration with sensible defaults.
-  const CoffeeTimeouts({
-    this.connectTimeout = const Duration(seconds: 10),
-    this.receiveTimeout = const Duration(seconds: 20),
-  });
+  const CoffeeTimeouts({this.connectTimeout = const Duration(seconds: 10), this.receiveTimeout = const Duration(seconds: 20)});
 }

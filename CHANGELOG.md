@@ -14,3 +14,7 @@ Initial release.
 ## 0.0.2
 
 Updated README and added a ROADMAP.md
+
+## 0.0.3
+
+Removed Typedefs.
