@@ -66,13 +66,23 @@ class CoffeeRawResponse {
   ///
   /// Instances of this class are produced internally by `CoffeeHttp`
   /// and passed through hooks and handlers without mutation.
-  CoffeeRawResponse({required this.statusCode, required this.headers, required this.body, required this.duration});
+  CoffeeRawResponse({
+    required this.statusCode,
+    required this.headers,
+    required this.body,
+    required this.duration,
+  });
 
   /// Creates a copy of this response with selectively overridden fields.
   ///
   /// This is primarily used internally to attach timing information
   /// after the transport layer has completed.
-  CoffeeRawResponse copyWith({int? statusCode, Map<String, String>? headers, String? body, Duration? duration}) {
+  CoffeeRawResponse copyWith({
+    int? statusCode,
+    Map<String, String>? headers,
+    String? body,
+    Duration? duration,
+  }) {
     return CoffeeRawResponse(
       statusCode: statusCode ?? this.statusCode,
       headers: headers ?? this.headers,

@@ -7,7 +7,10 @@ import 'dart:async';
 void main() {
   CoffeeHttp.configure(
     CoffeeHttpConfig(
-      baseUrl: CoffeeUri(host: 'jsonplaceholder.typicode.com', scheme: CoffeeHttpScheme.https),
+      baseUrl: CoffeeUri(
+        host: 'jsonplaceholder.typicode.com',
+        scheme: CoffeeHttpScheme.https,
+      ),
       headersBuilder: (request) {
         // Example: attach headers based on request tags
         if (request.tags.contains('auth')) {
@@ -76,7 +79,11 @@ class _ExampleScreenState extends State<ExampleScreen> {
     });
 
     try {
-      final data = await CoffeeHttp.instance.getHandled<Map<String, dynamic>>('/posts/1', name: 'posts.single', tags: {'public'});
+      final data = await CoffeeHttp.instance.getHandled<Map<String, dynamic>>(
+        '/posts/1',
+        name: 'posts.single',
+        tags: {'public'},
+      );
 
       setState(() {
         _output = const JsonEncoder.withIndent('  ').convert(data);
@@ -101,11 +108,22 @@ class _ExampleScreenState extends State<ExampleScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton(onPressed: _loading ? null : _loadPost, child: const Text('Load example request')),
+            ElevatedButton(
+              onPressed: _loading ? null : _loadPost,
+              child: const Text('Load example request'),
+            ),
             const SizedBox(height: 16),
             if (_loading) const LinearProgressIndicator(),
             const SizedBox(height: 16),
-            Expanded(child: SingleChildScrollView(child: Text(_output.isEmpty ? 'Press the button to execute a request.' : _output))),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  _output.isEmpty
+                      ? 'Press the button to execute a request.'
+                      : _output,
+                ),
+              ),
+            ),
           ],
         ),
       ),

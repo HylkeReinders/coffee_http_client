@@ -16,7 +16,8 @@ import 'response.dart';
 /// `coffee_http` does not impose any behavior here.
 ///
 /// The return value is typed at the call site via `getHandled<T>()`.
-typedef CoffeeHandleResponse = Object? Function(CoffeeHandleResponseContext ctx);
+typedef CoffeeHandleResponse =
+    Object? Function(CoffeeHandleResponseContext ctx);
 
 /// Observes a completed HTTP request.
 ///
@@ -110,7 +111,11 @@ final class CoffeeHandleResponseContext {
   final int? forceStatusCode;
 
   /// Creates a response-handling context.
-  const CoffeeHandleResponseContext({required this.request, required this.response, this.forceStatusCode});
+  const CoffeeHandleResponseContext({
+    required this.request,
+    required this.response,
+    this.forceStatusCode,
+  });
 }
 
 /// Context provided to [CoffeeOnResponse].

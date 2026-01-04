@@ -18,7 +18,8 @@ import 'request.dart';
 /// 1) [CoffeeHttpConfig.defaultHeaders]
 /// 2) [CoffeeHttpConfig.headersBuilder] output
 /// 3) [CoffeeRequest.headers]
-typedef CoffeeHeadersBuilder = FutureOr<Map<String, String>> Function(CoffeeRequest request);
+typedef CoffeeHeadersBuilder =
+    FutureOr<Map<String, String>> Function(CoffeeRequest request);
 
 /// Supported URL schemes for [CoffeeUri].
 ///
@@ -78,7 +79,10 @@ final class CoffeeHttpConfig {
   /// This should typically be called once at app startup and passed into `CoffeeHttp.configure(...)`.
   CoffeeHttpConfig({
     required this.baseUrl,
-    this.defaultHeaders = const {'Accept': 'application/json', 'Content-Type': 'application/json'},
+    this.defaultHeaders = const {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
     this.headersBuilder,
     this.timeouts = const CoffeeTimeouts(),
     this.hooks = const CoffeeHooks(),
@@ -204,5 +208,8 @@ final class CoffeeTimeouts {
   final Duration receiveTimeout;
 
   /// Creates a timeout configuration with sensible defaults.
-  const CoffeeTimeouts({this.connectTimeout = const Duration(seconds: 10), this.receiveTimeout = const Duration(seconds: 20)});
+  const CoffeeTimeouts({
+    this.connectTimeout = const Duration(seconds: 10),
+    this.receiveTimeout = const Duration(seconds: 20),
+  });
 }

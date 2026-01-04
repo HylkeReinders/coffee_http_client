@@ -37,5 +37,8 @@ abstract class CoffeeTransportAdapter {
   /// - raw response body
   ///
   /// Timing information is handled by `CoffeeHttp`, not by the adapter.
-  Future<CoffeeRawResponse> send(CoffeeRequest request, {required Map<String, String> headers});
+  Future<CoffeeRawResponse> send(
+    CoffeeRequest request, {
+    required Map<String, String> headers,
+  });
 }
