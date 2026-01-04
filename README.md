@@ -319,6 +319,27 @@ Production code should be:
 
 If something feels missing, it is probably intentional.
 
+## Roadmap
+`coffee_http_client` is intentionally small today, but designed to grow in a controlled and pragmatic way.
+
+The long-term goal is to become a production-ready alternative to Dio, focused on what teams need, not feature parity for its own sake.
+
+Planned areas of expansion include:
+- request lifecycle improvements
+- explicit retry and cancellation strategies
+- multipart & file uploads
+- streaming downloads
+- extensible transport adapters
+- observability and telemetry hooks
+
+All new features must:
+- respect the existing request lifecycle
+- remain explicit and opt-in
+- avoid hidden magic or implicit behavior
+
+The full roadmap, including non-goals and version planning, lives in ROADMAP.md￼.
+
+
 ## License
 
 MIT

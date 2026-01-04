@@ -10,3 +10,7 @@ Initial release.
 - Lifecycle hooks: `onResponse`, `onError`
 - Stable configuration model with explicit header merging
 - Example app and public API tests included
+
+## 0.0.2
+
+Updated README and added a ROADMAP.md
