@@ -74,8 +74,8 @@ final class CoffeeHttp {
   /// - testing
   /// - background isolates
   /// - multiple API clients
-  static CoffeeHttp create(CoffeeHttpConfig config) {
-    return CoffeeHttp._(config, HttpPackageAdapter(config));
+  static CoffeeHttp create(CoffeeHttpConfig config, {CoffeeTransportAdapter? adapter}) {
+    return CoffeeHttp._(config, adapter ?? HttpPackageAdapter(config));
   }
 
   /// Executes a fully constructed [CoffeeRequest].
