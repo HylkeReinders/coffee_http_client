@@ -97,6 +97,32 @@ void main() {
       expect(req.headers['X-Debug'], '1');
       expect(req.jsonBody, isA<Map>());
     });
+
+    test('convenience constructors set method and fields', () {
+      final getReq = CoffeeRequest.get(
+        path: '/users',
+        name: 'users.list',
+        tags: {'public'},
+        query: {'page': '1'},
+        headers: {'X': '1'},
+      );
+
+      final postReq = CoffeeRequest.post(
+        path: '/users',
+        jsonBody: {'name': 'Ada'},
+      );
+
+      expect(getReq.method, CoffeeHttpMethod.get);
+      expect(getReq.path, '/users');
+      expect(getReq.name, 'users.list');
+      expect(getReq.tags, contains('public'));
+      expect(getReq.query['page'], '1');
+      expect(getReq.headers['X'], '1');
+
+      expect(postReq.method, CoffeeHttpMethod.post);
+      expect(postReq.path, '/users');
+      expect(postReq.jsonBody, isA<Map>());
+    });
   });
 
   group('CoffeeRawResponse', () {

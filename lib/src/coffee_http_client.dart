@@ -1,10 +1,11 @@
 import 'dart:async';
 
+import 'package:http/http.dart' as http;
+
 import '/src/adapters/adapter.dart';
 import '/src/adapters/http_adapter.dart';
 import '/src/models/request.dart';
 import '/src/models/response.dart';
-
 import 'models/config.dart';
 import 'error.dart';
 import 'models/hooks.dart';
@@ -25,7 +26,7 @@ import 'models/hooks.dart';
 ///
 /// The client exposes two usage styles:
 /// 1) **Raw requests** (`get`, `post`, `request`)
-/// 2) **Handled requests** (`getHandled<T>`)
+/// 2) **Handled requests** (`getHandled<T>`, `postHandled<T>`)
 ///
 /// Raw requests always return [CoffeeRawResponse].
 /// Handled requests delegate semantics to the `handleResponse` hook.
@@ -92,7 +93,7 @@ final class CoffeeHttp {
   /// Transport-level failures result in a thrown [CoffeeHttpError]
   /// and trigger the `onError` hook.
   Future<CoffeeRawResponse> request(CoffeeRequest request) async {
-    final start = DateTime.now();
+    final stopwatch = Stopwatch()..start();
 
     final headers = await _mergeHeaders(request);
 
@@ -100,19 +101,14 @@ final class CoffeeHttp {
 
     try {
       response = await _adapter.send(request, headers: headers);
-    } on TimeoutException catch (timeoutException) {
-      final error = CoffeeHttpError(kind: CoffeeHttpErrorKind.timeout, underlying: timeoutException);
-      _config.hooks.onError?.call(CoffeeErrorContext(request: request, error: error));
-
-      throw error;
     } catch (exception) {
-      final error = CoffeeHttpError(kind: CoffeeHttpErrorKind.network, underlying: exception);
+      final error = _toCoffeeError(exception);
       _config.hooks.onError?.call(CoffeeErrorContext(request: request, error: error));
-
       throw error;
     }
 
-    final duration = DateTime.now().difference(start);
+    stopwatch.stop();
+    final duration = stopwatch.elapsed;
     final timedResponse = response.copyWith(duration: duration);
 
     _config.hooks.onResponse?.call(CoffeeResponseContext(request: request, response: timedResponse));
@@ -260,5 +256,16 @@ final class CoffeeHttp {
     merged.addAll(request.headers);
 
     return merged;
+  }
+
+  CoffeeHttpError _toCoffeeError(Object exception) {
+    if (exception is CoffeeHttpError) return exception;
+    if (exception is TimeoutException) {
+      return CoffeeHttpError(kind: CoffeeHttpErrorKind.timeout, underlying: exception);
+    }
+    if (exception is http.ClientException) {
+      return CoffeeHttpError(kind: CoffeeHttpErrorKind.network, underlying: exception);
+    }
+    return CoffeeHttpError(kind: CoffeeHttpErrorKind.unknown, underlying: exception);
   }
 }

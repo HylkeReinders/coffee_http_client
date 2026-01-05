@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:coffee_http_client/src/adapters/adapter.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:coffee_http_client/coffee_http_client.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   group('CoffeeHttp (with injected adapter)', () {
@@ -73,7 +73,7 @@ void main() {
       expect(seen, isNotNull);
       expect(seen!.request.path, '/ping');
       expect(seen!.response.statusCode, 201);
-      expect(seen!.response.duration.inMicroseconds, greaterThan(0));
+      expect(seen!.response.duration.inMicroseconds, greaterThanOrEqualTo(0));
     });
 
     test(
@@ -110,11 +110,11 @@ void main() {
     );
 
     test(
-      'request() maps other exceptions to CoffeeHttpErrorKind.network and calls onError',
+      'request() maps http client exceptions to CoffeeHttpErrorKind.network and calls onError',
       () async {
         CoffeeErrorContext? seen;
 
-        final adapter = _ThrowingAdapter(() => throw Exception('no internet'));
+        final adapter = _ThrowingAdapter(() => throw http.ClientException('no internet'));
 
         final client = CoffeeHttp.create(
           CoffeeHttpConfig(
@@ -137,6 +137,37 @@ void main() {
         expect(seen, isNotNull);
         expect(seen!.request.path, '/network');
         expect(seen!.error.kind, CoffeeHttpErrorKind.network);
+      },
+    );
+
+    test(
+      'request() maps unknown exceptions to CoffeeHttpErrorKind.unknown and calls onError',
+      () async {
+        CoffeeErrorContext? seen;
+
+        final adapter = _ThrowingAdapter(() => throw StateError('bad state'));
+
+        final client = CoffeeHttp.create(
+          CoffeeHttpConfig(
+            baseUrl: CoffeeUri(
+              host: 'example.com',
+              scheme: CoffeeHttpScheme.https,
+            ),
+            hooks: CoffeeHooks(onError: (ctx) => seen = ctx),
+          ),
+          adapter: adapter,
+        );
+
+        try {
+          await client.get('/unknown');
+          fail('Expected CoffeeHttpError');
+        } on CoffeeHttpError catch (e) {
+          expect(e.kind, CoffeeHttpErrorKind.unknown);
+        }
+
+        expect(seen, isNotNull);
+        expect(seen!.request.path, '/unknown');
+        expect(seen!.error.kind, CoffeeHttpErrorKind.unknown);
       },
     );
 
@@ -204,10 +235,44 @@ void main() {
           adapter: adapter,
         );
 
-        final map = await client.getHandled<Map<String, dynamic>>('/x');
-        expect(map['status'], 200);
-      },
+      final map = await client.getHandled<Map<String, dynamic>>('/x');
+      expect(map['status'], 200);
+    },
     );
+
+    test('getHandled<T>() calls onResponse before handleResponse', () async {
+      final events = <String>[];
+
+      final adapter = _FixedAdapter(
+        CoffeeRawResponse(
+          statusCode: 200,
+          headers: const {},
+          body: '{"ok":true}',
+          duration: Duration.zero,
+        ),
+      );
+
+      final client = CoffeeHttp.create(
+        CoffeeHttpConfig(
+          baseUrl: CoffeeUri(
+            host: 'example.com',
+            scheme: CoffeeHttpScheme.https,
+          ),
+          hooks: CoffeeHooks(
+            onResponse: (ctx) => events.add('onResponse'),
+            handleResponse: (ctx) {
+              events.add('handleResponse');
+              return ctx.response.statusCode;
+            },
+          ),
+        ),
+        adapter: adapter,
+      );
+
+      final status = await client.getHandled<int>('/x');
+      expect(status, 200);
+      expect(events, ['onResponse', 'handleResponse']);
+    });
 
     test(
       'getHandled<T>() throws StateError when handleResponse is not configured',

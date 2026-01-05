@@ -31,9 +31,11 @@ final class CoffeeHttpConfig {
 
   /// Timeout configuration for requests.
   ///
-  /// Note: `package:http` effectively supports a single total request timeout via `.timeout(...)`.
-  /// In v0.0.1 we use [CoffeeTimeouts.receiveTimeout] as that total timeout.
-  /// [CoffeeTimeouts.connectTimeout] is reserved for future adapters / clients.
+  /// Default adapter mapping (`package:http`):
+  /// - [CoffeeTimeouts.receiveTimeout] is applied as a total request timeout
+  ///   via `Future.timeout(...)`.
+  /// - [CoffeeTimeouts.connectTimeout] is currently reserved for future
+  ///   adapters that can distinguish connection vs read phases.
   final CoffeeTimeouts timeouts;
 
   /// Builds additional headers for a single request.
@@ -142,11 +144,11 @@ final class CoffeeUri {
   /// Normalizes the prefix part of the URL.
   ///
   /// Guarantees:
-  /// - returned value starts with `/`
+  /// - returned value starts with `/` (when non-empty)
   /// - returned value does not end with `/` (unless it is "/")
   ///
   /// Examples:
-  /// - ""        => "/"
+  /// - ""        => ""
   /// - "api/v1"  => "/api/v1"
   /// - "/api/v1" => "/api/v1"
   /// - "/api/v1/"=> "/api/v1"

@@ -22,3 +22,10 @@ Removed Typedefs.
 ## 0.0.4
 
 Added a postHandled<T>()
+
+## 0.1.0
+
+- Improved error classification with `unknown` fallback
+- Added `CoffeeMockAdapter` for deterministic, no-network tests
+- Added `CoffeeRequest` convenience constructors
+- Documented timeout mapping and handled POST requests

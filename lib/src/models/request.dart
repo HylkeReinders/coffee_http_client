@@ -1,7 +1,7 @@
 enum CoffeeHttpMethod { get, post, put, patch, delete }
 
-/// `CoffeeRequest`'s
-/// only goal is to **describe what is being requested**, noting more. Everything else happens around it.
+/// `CoffeeRequest`'s only goal is to **describe what is being requested**, nothing more.
+/// Everything else happens around it.
 ///
 /// It is a data structure and not a behavior carrier.
 ///
@@ -11,7 +11,7 @@ enum CoffeeHttpMethod { get, post, put, patch, delete }
 /// - stability over flexibility
 /// - conventions over configuration flags.
 ///
-/// As a result some repetition is expected and higher-lever helpers are built on top; not inside. This intentional.
+/// As a result some repetition is expected and higher-level helpers are built on top; not inside. This is intentional.
 ///
 final class CoffeeRequest {
   /// The HTTP method for the request.
@@ -41,7 +41,7 @@ final class CoffeeRequest {
   /// - products.list
   /// - cart.add
   ///
-  /// User for logging, telemetry, debugging, hook context.
+  /// Used for logging, telemetry, debugging, hook context.
   ///
   /// This is **not** required, but apps that provide names gain observability for free.
   final String? name;
@@ -72,7 +72,7 @@ final class CoffeeRequest {
   /// Query parameters for the request.
   ///
   /// - Explicitly string-based.
-  /// - Callers are responsible for enconding values
+  /// - Callers are responsible for encoding values
   /// - No magic serialization.
   ///
   /// What you put in gets through to the API.
@@ -108,4 +108,92 @@ final class CoffeeRequest {
     this.headers = const {},
     this.jsonBody,
   });
+
+  /// Convenience constructor for GET requests.
+  const CoffeeRequest.get({
+    required String path,
+    String? name,
+    Set<String> tags = const {},
+    Map<String, String> query = const {},
+    Map<String, String> headers = const {},
+  }) : this(
+          method: CoffeeHttpMethod.get,
+          path: path,
+          name: name,
+          tags: tags,
+          query: query,
+          headers: headers,
+        );
+
+  /// Convenience constructor for POST requests.
+  const CoffeeRequest.post({
+    required String path,
+    String? name,
+    Set<String> tags = const {},
+    Map<String, String> query = const {},
+    Map<String, String> headers = const {},
+    Object? jsonBody,
+  }) : this(
+          method: CoffeeHttpMethod.post,
+          path: path,
+          name: name,
+          tags: tags,
+          query: query,
+          headers: headers,
+          jsonBody: jsonBody,
+        );
+
+  /// Convenience constructor for PUT requests.
+  const CoffeeRequest.put({
+    required String path,
+    String? name,
+    Set<String> tags = const {},
+    Map<String, String> query = const {},
+    Map<String, String> headers = const {},
+    Object? jsonBody,
+  }) : this(
+          method: CoffeeHttpMethod.put,
+          path: path,
+          name: name,
+          tags: tags,
+          query: query,
+          headers: headers,
+          jsonBody: jsonBody,
+        );
+
+  /// Convenience constructor for PATCH requests.
+  const CoffeeRequest.patch({
+    required String path,
+    String? name,
+    Set<String> tags = const {},
+    Map<String, String> query = const {},
+    Map<String, String> headers = const {},
+    Object? jsonBody,
+  }) : this(
+          method: CoffeeHttpMethod.patch,
+          path: path,
+          name: name,
+          tags: tags,
+          query: query,
+          headers: headers,
+          jsonBody: jsonBody,
+        );
+
+  /// Convenience constructor for DELETE requests.
+  const CoffeeRequest.delete({
+    required String path,
+    String? name,
+    Set<String> tags = const {},
+    Map<String, String> query = const {},
+    Map<String, String> headers = const {},
+    Object? jsonBody,
+  }) : this(
+          method: CoffeeHttpMethod.delete,
+          path: path,
+          name: name,
+          tags: tags,
+          query: query,
+          headers: headers,
+          jsonBody: jsonBody,
+        );
 }

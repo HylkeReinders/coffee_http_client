@@ -16,13 +16,13 @@ import 'response.dart';
 /// 3. HTTP transport is executed
 /// 4. Duration is measured
 /// 5. `onResponse` is called (if a response exists)
-/// 6. `handleResponse` is invoked via `getHandled<T>()`
+/// 6. `handleResponse` is invoked via `getHandled<T>()` or `postHandled<T>()`
 ///
 /// In case of failure:
 /// - `onError` is called
 /// - a `CoffeeHttpError` is thrown
 final class CoffeeHooks {
-  /// Standard response handler used by `getHandled<T>()`.
+  /// Standard response handler used by `getHandled<T>()` and `postHandled<T>()`.
   ///
   /// If not provided, calling `getHandled<T>()` will throw.
   ///

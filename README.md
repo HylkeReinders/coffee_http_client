@@ -85,15 +85,15 @@ This configuration is global and must be done once during app startup.
 
 ## Simple GET request (raw)
 
-````dart
+```dart
 final response = await CoffeeHttp.instance.get(
   '/users/me',
 );
 
 print(response.statusCode);
 print(response.body);
-print(response.duration);```
-````
+print(response.duration);
+```
 
 This returns a CoffeeRawResponse and does no interpretation.
 
@@ -113,6 +113,17 @@ final request = CoffeeRequest(
     'sku': 'ABC',
     'quantity': 2,
   },
+);
+```
+
+Convenience constructors are available when you want less boilerplate:
+
+```dart
+final request = CoffeeRequest.post(
+  path: '/cart/items',
+  name: 'cart.add',
+  tags: {'auth'},
+  jsonBody: {'sku': 'ABC', 'quantity': 2},
 );
 ```
 
@@ -156,6 +167,15 @@ CoffeeHttpConfig(
 );
 ```
 
+## Timeouts
+
+`CoffeeTimeouts` defines two values:
+
+- `connectTimeout` (reserved for future adapters)
+- `receiveTimeout` (used as the total request timeout by the default adapter)
+
+The default `package:http` adapter applies `receiveTimeout` via `Future.timeout(...)`.
+
 ## Hooks
 
 Hooks allow you to observe and control the request lifecycle.
@@ -172,7 +192,7 @@ All hooks are optional and opt-in.
 
 Defines how your application interprets responses.
 
-Used by `getHandled<T>()`.
+Used by `getHandled<T>()` and `postHandled<T>()`.
 
 ```dart
 CoffeeHooks(
@@ -267,6 +287,10 @@ Supported kinds:
 - timeout
 - unknown
 
+Network errors are detected when the adapter throws `http.ClientException`.
+Anything else that is not a timeout is classified as `unknown`.
+Custom adapters may throw `CoffeeHttpError` directly for precise classification.
+
 ## Raw vs handled responses
 
 ### Raw
@@ -278,6 +302,7 @@ Supported kinds:
 ### Handled
 
 - getHandled<T>
+- postHandled<T>
 - delegates to handleResponse
 - application-defined meaning
 
@@ -337,7 +362,31 @@ All new features must:
 - remain explicit and opt-in
 - avoid hidden magic or implicit behavior
 
-The full roadmap, including non-goals and version planning, lives in ROADMAP.md￼.
+The full roadmap, including non-goals and version planning, lives in ROADMAP.md.
+
+## Testing utilities
+
+`CoffeeMockAdapter` provides a network-free adapter for deterministic tests:
+
+```dart
+final adapter = CoffeeMockAdapter()
+  ..whenGet(
+    '/ping',
+    (request, headers) => CoffeeRawResponse(
+      statusCode: 200,
+      headers: const {},
+      body: 'pong',
+      duration: Duration.zero,
+    ),
+  );
+
+final client = CoffeeHttp.create(
+  CoffeeHttpConfig(
+    baseUrl: CoffeeUri(host: 'example.com', scheme: CoffeeHttpScheme.https),
+  ),
+  adapter: adapter,
+);
+```
 
 
 ## License
