@@ -13,15 +13,15 @@ Initial release.
 
 ## 0.0.2
 
-Updated README and added a ROADMAP.md
+- Updated README and added a ROADMAP.md
 
 ## 0.0.3
 
-Removed Typedefs.
+- Removed Typedefs.
 
 ## 0.0.4
 
-Added a postHandled<T>()
+- Added a postHandled<T>()
 
 ## 0.1.0
 
@@ -29,3 +29,7 @@ Added a postHandled<T>()
 - Added `CoffeeMockAdapter` for deterministic, no-network tests
 - Added `CoffeeRequest` convenience constructors
 - Documented timeout mapping and handled POST requests
+
+## 0.2.0
+
+- Added CoffeeCancellationToken for a cancellation flow.
