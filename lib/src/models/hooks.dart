@@ -77,10 +77,45 @@ final class CoffeeHooks {
   /// - mutate request state
   final void Function(CoffeeErrorContext ctx)? onError;
 
+  /// Observes request cancellation.
+  ///
+  /// `onCancel` is called when a request is explicitly cancelled via
+  /// a [CoffeeCancellationToken].
+  ///
+  /// Cancellation represents **loss of interest**, not a transport failure.
+  /// The underlying HTTP request may or may not have completed.
+  ///
+  /// Important semantics:
+  /// - `onCancel` is **not** an error hook.
+  /// - `onError` is **not** called for cancellations.
+  /// - `onResponse` is **not** called for cancelled requests.
+  ///
+  /// A cancelled request always throws a [CoffeeRequestCancelled] exception.
+  /// This exception is surfaced to the caller and may be caught explicitly.
+  ///
+  /// The provided [CoffeeCancelContext] includes:
+  /// - the original request
+  /// - the cancellation exception (with optional reason)
+  /// - the lifecycle phase at which cancellation occurred
+  ///
+  /// Typical use cases:
+  /// - telemetry (cancellation rates, user-aborted flows)
+  /// - debugging and tracing
+  /// - analytics (screen changes, navigation interrupts)
+  ///
+  /// This hook must not:
+  /// - swallow the cancellation exception
+  /// - retry the request implicitly
+  /// - treat cancellation as a network or application error
+  ///
+  /// Cancellation is intentional and explicit.
+  /// It should be observed, not corrected.
+  final void Function(CoffeeCancelContext ctx)? onCancel;
+
   /// Creates a hooks container.
   ///
   /// All hooks are optional and opt-in.
-  const CoffeeHooks({this.handleResponse, this.onResponse, this.onError});
+  const CoffeeHooks({this.handleResponse, this.onResponse, this.onError, this.onCancel});
 }
 
 /// Context provided to [CoffeeHandleResponse].
@@ -130,4 +165,32 @@ final class CoffeeErrorContext {
 
   /// Creates an error observation context.
   const CoffeeErrorContext({required this.request, required this.error});
+}
+
+/// Context provided to [onCancel].
+///
+/// This context represents a cancel failure.
+final class CoffeeCancelContext {
+  /// The request that got cancelled.
+  final CoffeeRequest request;
+
+  /// The cancel exception that got thrown.
+  final CoffeeRequestCancelled error;
+
+  /// Optional: how far the request got (before send / after send).
+  final CoffeeCancelPhase phase;
+
+  /// Creates an cancel observation context.
+  const CoffeeCancelContext({required this.request, required this.error, required this.phase});
+}
+
+enum CoffeeCancelPhase {
+  /// Cancelled before the transport adapter was invoked.
+  beforeSend,
+
+  /// Cancelled after a response was received but before processing hooks/handlers.
+  afterSend,
+
+  /// Cancelled while waiting (rare, but possible with adapter support).
+  inFlight,
 }

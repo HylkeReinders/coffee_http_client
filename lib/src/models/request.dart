@@ -1,3 +1,5 @@
+import 'package:coffee_http_client/src/models/cancellation_token.dart';
+
 enum CoffeeHttpMethod { get, post, put, patch, delete }
 
 /// `CoffeeRequest`'s only goal is to **describe what is being requested**, nothing more.
@@ -99,6 +101,8 @@ final class CoffeeRequest {
   /// `coffee_http` does not validate the body structure.
   final Object? jsonBody;
 
+  final CoffeeCancellationToken? cancellationToken;
+
   const CoffeeRequest({
     required this.method,
     required this.path,
@@ -107,6 +111,7 @@ final class CoffeeRequest {
     this.query = const {},
     this.headers = const {},
     this.jsonBody,
+    this.cancellationToken,
   });
 
   /// Convenience constructor for GET requests.
@@ -116,14 +121,8 @@ final class CoffeeRequest {
     Set<String> tags = const {},
     Map<String, String> query = const {},
     Map<String, String> headers = const {},
-  }) : this(
-          method: CoffeeHttpMethod.get,
-          path: path,
-          name: name,
-          tags: tags,
-          query: query,
-          headers: headers,
-        );
+    CoffeeCancellationToken? cancellationToken,
+  }) : this(method: CoffeeHttpMethod.get, path: path, name: name, tags: tags, query: query, headers: headers);
 
   /// Convenience constructor for POST requests.
   const CoffeeRequest.post({
@@ -132,16 +131,9 @@ final class CoffeeRequest {
     Set<String> tags = const {},
     Map<String, String> query = const {},
     Map<String, String> headers = const {},
+    CoffeeCancellationToken? cancellationToken,
     Object? jsonBody,
-  }) : this(
-          method: CoffeeHttpMethod.post,
-          path: path,
-          name: name,
-          tags: tags,
-          query: query,
-          headers: headers,
-          jsonBody: jsonBody,
-        );
+  }) : this(method: CoffeeHttpMethod.post, path: path, name: name, tags: tags, query: query, headers: headers, jsonBody: jsonBody);
 
   /// Convenience constructor for PUT requests.
   const CoffeeRequest.put({
@@ -150,16 +142,9 @@ final class CoffeeRequest {
     Set<String> tags = const {},
     Map<String, String> query = const {},
     Map<String, String> headers = const {},
+    CoffeeCancellationToken? cancellationToken,
     Object? jsonBody,
-  }) : this(
-          method: CoffeeHttpMethod.put,
-          path: path,
-          name: name,
-          tags: tags,
-          query: query,
-          headers: headers,
-          jsonBody: jsonBody,
-        );
+  }) : this(method: CoffeeHttpMethod.put, path: path, name: name, tags: tags, query: query, headers: headers, jsonBody: jsonBody);
 
   /// Convenience constructor for PATCH requests.
   const CoffeeRequest.patch({
@@ -168,16 +153,9 @@ final class CoffeeRequest {
     Set<String> tags = const {},
     Map<String, String> query = const {},
     Map<String, String> headers = const {},
+    CoffeeCancellationToken? cancellationToken,
     Object? jsonBody,
-  }) : this(
-          method: CoffeeHttpMethod.patch,
-          path: path,
-          name: name,
-          tags: tags,
-          query: query,
-          headers: headers,
-          jsonBody: jsonBody,
-        );
+  }) : this(method: CoffeeHttpMethod.patch, path: path, name: name, tags: tags, query: query, headers: headers, jsonBody: jsonBody);
 
   /// Convenience constructor for DELETE requests.
   const CoffeeRequest.delete({
@@ -186,14 +164,7 @@ final class CoffeeRequest {
     Set<String> tags = const {},
     Map<String, String> query = const {},
     Map<String, String> headers = const {},
+    CoffeeCancellationToken? cancellationToken,
     Object? jsonBody,
-  }) : this(
-          method: CoffeeHttpMethod.delete,
-          path: path,
-          name: name,
-          tags: tags,
-          query: query,
-          headers: headers,
-          jsonBody: jsonBody,
-        );
+  }) : this(method: CoffeeHttpMethod.delete, path: path, name: name, tags: tags, query: query, headers: headers, jsonBody: jsonBody);
 }

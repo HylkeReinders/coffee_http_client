@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:coffee_http_client/src/models/cancellation_token.dart';
 import 'package:http/http.dart' as http;
 
 import '/src/adapters/adapter.dart';
@@ -93,27 +94,41 @@ final class CoffeeHttp {
   /// Transport-level failures result in a thrown [CoffeeHttpError]
   /// and trigger the `onError` hook.
   Future<CoffeeRawResponse> request(CoffeeRequest request) async {
+    final token = request.cancellationToken;
+    var phase = CoffeeCancelPhase.beforeSend;
     final stopwatch = Stopwatch()..start();
 
-    final headers = await _mergeHeaders(request);
-
-    CoffeeRawResponse response;
-
     try {
-      response = await _adapter.send(request, headers: headers);
-    } catch (exception) {
-      final error = _toCoffeeError(exception);
+      token?.throwIfCancelled();
+
+      final headers = await _mergeHeaders(request);
+
+      token?.throwIfCancelled();
+
+      phase = CoffeeCancelPhase.inFlight;
+      final response = await _adapter.send(request, headers: headers);
+      phase = CoffeeCancelPhase.afterSend;
+
+      token?.throwIfCancelled();
+
+      stopwatch.stop();
+      final timedResponse = response.copyWith(duration: stopwatch.elapsed);
+
+      token?.throwIfCancelled();
+
+      _config.hooks.onResponse?.call(CoffeeResponseContext(request: request, response: timedResponse));
+
+      return timedResponse;
+    } on CoffeeRequestCancelled catch (e) {
+      stopwatch.stop();
+      _config.hooks.onCancel?.call(CoffeeCancelContext(request: request, error: e, phase: phase));
+      rethrow;
+    } catch (e) {
+      stopwatch.stop();
+      final error = _toCoffeeError(e);
       _config.hooks.onError?.call(CoffeeErrorContext(request: request, error: error));
       throw error;
     }
-
-    stopwatch.stop();
-    final duration = stopwatch.elapsed;
-    final timedResponse = response.copyWith(duration: duration);
-
-    _config.hooks.onResponse?.call(CoffeeResponseContext(request: request, response: timedResponse));
-
-    return timedResponse;
   }
 
   final CoffeeHttpConfig _config;

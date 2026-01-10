@@ -86,3 +86,19 @@ class CoffeeHttpError implements Exception {
   /// and surfaced to the application via thrown exceptions and `onError` hooks.
   CoffeeHttpError({required this.kind, required this.underlying});
 }
+
+/// Thrown when a request is cancelled via [CoffeeCancellationToken].
+///
+/// This is not a transport error and should typically not be reported
+/// as a network failure.
+class CoffeeRequestCancelled implements Exception {
+  final Object? reason;
+
+  const CoffeeRequestCancelled([this.reason]);
+
+  @override
+  String toString() {
+    if (reason == null) return 'CoffeeRequestCancelled()';
+    return 'CoffeeRequestCancelled(reason: $reason)';
+  }
+}
